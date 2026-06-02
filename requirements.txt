@@ -1,0 +1,6 @@
+discord.py
+llama-cpp-python
+minio
+requests
+python-dotenv
+uuid
