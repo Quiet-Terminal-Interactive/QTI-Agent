@@ -15,7 +15,7 @@ N_CTX = 2048
 
 log = logging.getLogger("agent")
 
-print(f"Loading model from {MODEL_PATH}...")
+log.info(f"Loading model from {MODEL_PATH}...")
 llm = Llama(
     model_path=MODEL_PATH,
     n_ctx=N_CTX,
@@ -24,7 +24,7 @@ llm = Llama(
     n_gpu_layers=0,
     verbose=False,
 )
-print("Model loaded.")
+log.info("Model loaded.")
 
 def _extract_json(text: str) -> dict | None:
     text = re.sub(r"```(?:json)?", "", text).strip()

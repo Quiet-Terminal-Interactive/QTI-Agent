@@ -4,11 +4,7 @@ import sys
 from pathlib import Path
 from dotenv import load_dotenv
 
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-    datefmt="%H:%M:%S",
-)
+log = logging.getLogger("main")
 
 #env_path = Path.home() / ".env"
 env_path = "./.env"
@@ -24,8 +20,8 @@ REQUIRED = [
 
 missing = [k for k in REQUIRED if not os.getenv(k)]
 if missing:
-    print(f"[startup] Missing required environment variables: {', '.join(missing)}")
-    print(f"[startup] Check {env_path} and try again.")
+    log.error(f"[startup] Missing required environment variables: {', '.join(missing)}")
+    log.error(f"[startup] Check {env_path} and try again.")
     sys.exit(1)
 
 from pathlib import Path
@@ -44,13 +40,13 @@ for path, default in DEFAULTS.items():
     if not path.exists():
         with open(path, "w") as f:
             json.dump(default, f, indent=2)
-        print(f"[startup] Initialised {path.name}")
+        log.info(f"[startup] Initialised {path.name}")
 
 for d in ["configs", "builds", "documents", "downloads"]:
     (HOME / d).mkdir(exist_ok=True)
 
-print("[startup] Environment OK")
-print("[startup] Starting QTI's Little Helper...")
+log.info("[startup] Environment OK")
+log.info("[startup] Starting QTI's Little Helper...")
 
 from discord_client import run
 run()

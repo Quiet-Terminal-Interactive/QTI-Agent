@@ -1,8 +1,11 @@
 import discord
+import logging
 import os
 import asyncio
 from context_builder import build_context
 from agent import run_agent
+
+log = logging.getLogger("discord_client")
 
 ALLOWED_ROLE_ID = int(os.getenv("ALLOWED_ROLE_ID", "1297669279461933116"))
 
@@ -18,7 +21,7 @@ class QTIAgent(discord.Client):
         super().__init__(intents=intents)
 
     async def on_ready(self):
-        print(f"QTI's Little Helper is online as {self.user}")
+        log.info(f"QTI's Little Helper is online as {self.user}")
 
     async def on_message(self, message: discord.Message):
         if message.author == self.user:
@@ -61,7 +64,7 @@ class QTIAgent(discord.Client):
             await self._post_response(message, response_text, files)
 
         except Exception as e:
-            print(f"Error handling message {message.id}: {e}")
+            log.error(f"Error handling message {message.id}: {e}")
             response_text = "Something went wrong on my end — check the logs."
             await self._post_response(message, response_text, [])
 
@@ -122,9 +125,19 @@ class QTIAgent(discord.Client):
         files: list[str],
     ):
         discord_files = []
+        missing_files = []
         for path in files:
-            if path and os.path.exists(path):
+            if not path:
+                continue
+            if os.path.exists(path):
                 discord_files.append(discord.File(path))
+            else:
+                log.warning("File attachment not found, skipping: %s", path)
+                missing_files.append(path)
+
+        if missing_files:
+            text = text.rstrip()
+            text += "\n\n_(Could not attach: " + ", ".join(f"`{p}`" for p in missing_files) + " — file not found on disk.)_"
 
         chunks = _chunk_text(text, limit=1900)
 
