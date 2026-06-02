@@ -20,7 +20,8 @@ All following steps run as `qtiagent`.
 ### 2. Clone the bot
 
 ```bash
-git clone https://github.com/Quiet-Terminal-Interactive/QTI-Agent ~
+git clone https://github.com/Quiet-Terminal-Interactive/QTI-Agent ~/temp
+mv temp/* ~
 ```
 
 ---
