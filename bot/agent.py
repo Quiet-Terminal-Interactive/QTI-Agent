@@ -9,7 +9,7 @@ from tools import dispatch
 MAX_ITERATIONS = 10
 N_CTX = 2048
 REMOTE_BASE_URL = "https://hermes.ai.unturf.com/v1/"
-REMOTE_MODEL = os.getenv("REMOTE_MODEL", "hermes")
+REMOTE_MODEL = os.getenv("REMOTE_MODEL", "adamo1139/Hermes-3-Llama-3.1-8B-FP8-Dynamic")
 
 log = logging.getLogger("agent")
 
