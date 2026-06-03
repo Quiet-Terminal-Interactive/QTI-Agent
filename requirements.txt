@@ -1,5 +1,6 @@
 discord.py
 llama-cpp-python
+openai
 minio
 requests
 python-dotenv

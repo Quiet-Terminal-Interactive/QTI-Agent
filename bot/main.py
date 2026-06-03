@@ -6,17 +6,20 @@ from dotenv import load_dotenv
 
 log = logging.getLogger("main")
 
-#env_path = Path.home() / ".env"
 env_path = "./.env"
 load_dotenv(dotenv_path=env_path)
+
+USE_LOCAL_MODEL = os.getenv("USE_LOCAL_MODEL", "0") == "1"
 
 REQUIRED = [
     "DISCORD_TOKEN",
     "GITEA_URL",
     "GITEA_TOKEN",
     "MINIO_ENDPOINT",
-    "MODEL_PATH",
 ]
+
+if USE_LOCAL_MODEL:
+    REQUIRED.append("MODEL_PATH")
 
 missing = [k for k in REQUIRED if not os.getenv(k)]
 if missing:

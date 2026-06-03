@@ -3,28 +3,38 @@ import logging
 import os
 import re
 from pathlib import Path
-from llama_cpp import Llama
 
 from tools import dispatch
 
-MODEL_PATH = os.getenv("MODEL_PATH", str(Path.home() / "models" / "qwen3.5-4b-q4_k_m.gguf"))
-
 MAX_ITERATIONS = 10
-
 N_CTX = 2048
+REMOTE_BASE_URL = "https://hermes.ai.unturf.com/v1/"
+REMOTE_MODEL = os.getenv("REMOTE_MODEL", "hermes")
 
 log = logging.getLogger("agent")
 
-log.info(f"Loading model from {MODEL_PATH}...")
-llm = Llama(
-    model_path=MODEL_PATH,
-    n_ctx=N_CTX,
-    n_threads=os.cpu_count(),
-    n_batch=512,
-    n_gpu_layers=0,
-    verbose=False,
-)
-log.info("Model loaded.")
+USE_LOCAL_MODEL = os.getenv("USE_LOCAL_MODEL", "0") == "1"
+
+if USE_LOCAL_MODEL:
+    from llama_cpp import Llama
+    MODEL_PATH = os.getenv("MODEL_PATH", str(Path.home() / "models" / "qwen3.5-4b-q4_k_m.gguf"))
+    log.info(f"Loading model from {MODEL_PATH}...")
+    llm = Llama(
+        model_path=MODEL_PATH,
+        n_ctx=N_CTX,
+        n_threads=os.cpu_count(),
+        n_batch=512,
+        n_gpu_layers=0,
+        verbose=False,
+    )
+    log.info("Model loaded.")
+else:
+    from openai import OpenAI
+    llm = OpenAI(
+        base_url=REMOTE_BASE_URL,
+        api_key=os.getenv("OPENAI_API_KEY", "not-required"),
+    )
+    log.info(f"Using remote model at {REMOTE_BASE_URL}")
 
 def _extract_json(text: str) -> dict | None:
     text = re.sub(r"```(?:json)?", "", text).strip()
@@ -54,16 +64,23 @@ def _format_tool_result(tool_name: str, result: dict) -> str:
 
 
 def _call_model(system_prompt: str, messages: list[dict]) -> str:
-    response = llm.create_chat_completion(
-        messages=[
-            {"role": "system", "content": system_prompt},
-            *messages,
-        ],
-        temperature=0.2,
-        max_tokens=512,
-        stop=["```\n", "\n\n\n"],
-    )
-    return response["choices"][0]["message"]["content"].strip()
+    full_messages = [{"role": "system", "content": system_prompt}, *messages]
+    if USE_LOCAL_MODEL:
+        response = llm.create_chat_completion(
+            messages=full_messages,
+            temperature=0.2,
+            max_tokens=512,
+            stop=["```\n", "\n\n\n"],
+        )
+        return response["choices"][0]["message"]["content"].strip()
+    else:
+        response = llm.chat.completions.create(
+            model=REMOTE_MODEL,
+            messages=full_messages,
+            temperature=0.2,
+            max_tokens=512,
+        )
+        return response.choices[0].message.content.strip()
 
 def run_agent(context: dict) -> tuple[str, list[str]]:
     system_prompt = context["system_prompt"]

@@ -1,11 +1,18 @@
 {
-  "current_version": "0.1.0",
+  "current_version": "0.2.0",
   "versions": {
     "0.1.0": [
       {
         "text": "Initial version — QTI's Little Helper online",
         "author": "ieatsystemfiles",
         "timestamp": "2026-06-02T00:00:00Z"
+      }
+    ],
+    "0.2.0": [
+      {
+        "text": "Add unturf outsource model",
+        "author": "ieatsystemfiles",
+        "timestamp": "2026-06-03T000:00:00:Z"
       }
     ]
   }
